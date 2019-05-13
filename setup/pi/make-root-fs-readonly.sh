@@ -66,6 +66,13 @@ sed -i "s/spool\s*0755/spool 1777/g" /usr/lib/tmpfiles.d/var.conf >/dev/null
 mv /etc/resolv.conf /tmp/dhcpcd.resolv.conf
 ln -s /tmp/dhcpcd.resolv.conf /etc/resolv.conf
 
+# Move dnsmasq.leases to tmpfs
+systemctl stop dnsmasq
+touch /var/lib/misc/dnsmasq.leases
+mv /var/lib/misc/dnsmasq.leases /tmp/dnsmasq.leases
+ln -s /tmp/dnsmasq.leases /var/lib/misc/dnsmasq.leases
+systemctl start dnsmasq
+
 # Update /etc/fstab
 # make /boot read-only
 # make / read-only

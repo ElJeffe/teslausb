@@ -21,11 +21,11 @@ then
   fi
 fi
 
-REPO=${REPO:-marcone}
+REPO=${REPO:-ElJeffe}
 BRANCH=${BRANCH:-main-dev}
 HEADLESS_SETUP=${HEADLESS_SETUP:-false}
 USE_LED_FOR_SETUP_PROGRESS=true
-CONFIGURE_ARCHIVING=${CONFIGURE_ARCHIVING:-true}
+CONFIGURE_ARCHIVING=${CONFIGURE_ARCHIVING:-false}
 UPGRADE_PACKAGES=${UPGRADE_PACKAGES:-true}
 TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
 export camsize=${camsize:-90%}
@@ -196,7 +196,10 @@ function make_root_fs_readonly () {
 
 function update_package_index () {
   setup_progress "Updating package index files..."
-  apt-get update
+    if [ "$UPGRADE_PACKAGES" = true ]
+    then
+      apt-get update
+    fi
 }
 
 function upgrade_packages () {
