@@ -82,6 +82,8 @@ wpa_passphrase=ElonMusk
 wpa_key_mgmt=WPA-PSK
 wpa_pairwise=TKIP
 rsn_pairwise=CCMP
+ctrl_interface=/var/run/hostapd
+ctrl_interface_group=0
 EOT
   fi
   echo "Update /etc/default/hostapd"
