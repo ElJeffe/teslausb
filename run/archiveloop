@@ -333,41 +333,41 @@ export -f log
 log "Starting..."
 
 
-if archive_is_reachable
-then
-  fastblink
+# if archive_is_reachable
+# then
+#   fastblink
 
-  # archive_clips will fix errors in the cam file
-  mount_and_fix_errors_in_music_file
+#   # archive_clips will fix errors in the cam file
+#   mount_and_fix_errors_in_music_file
 
-  archive_clips
+#   archive_clips
 
-  doubleblink
+#   doubleblink
 
-  wait_for_archive_to_be_unreachable
-else
+#   wait_for_archive_to_be_unreachable
+# else
   slowblink
 
   mount_and_fix_errors_in_files
 
   connect_usb_drives_to_host
-fi
+# fi
 
-while [ true ]
-do
-  slowblink
+# while [ true ]
+# do
+#   slowblink
 
-  wait_for_archive_to_be_reachable
+#   wait_for_archive_to_be_reachable
 
-  fastblink
+#   fastblink
 
-  sleep ${ARCHIVE_DELAY:-20}
+#   sleep ${ARCHIVE_DELAY:-20}
 
-  archive_clips
+#   archive_clips
 
-  truncate_log
+#   truncate_log
 
-  doubleblink
+#   doubleblink
 
-  wait_for_archive_to_be_unreachable
-done
+#   wait_for_archive_to_be_unreachable
+# done
