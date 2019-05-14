@@ -34,6 +34,7 @@ export LOG_FILE=/tmp/usb_mount.log
 
 export CAM_MOUNT=/mnt/cam
 export MUSIC_MOUNT=/mnt/music
+ERRORS_CHECKED_FILE=/tmp/errors_checked
 
 function log () {
   echo -n "$( date ): " >> "$LOG_FILE"
@@ -178,10 +179,10 @@ function connect_usb_drives_to_host() {
 
 if [ $1 == "mount" ]
 then
-  if ! [ -e "/mutable/errors_checked" ]
+  if ! [ -e "$ERRORS_CHECKED_FILE" ]
   then
     mount_and_fix_errors_in_files
-    touch /mutable/errors_checked
+    touch $ERRORS_CHECKED_FILE
   fi
   connect_usb_drives_to_host
 elif [ $1 == "unmount" ]

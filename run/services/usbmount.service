@@ -6,5 +6,8 @@ After=
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-ExecStart=/bin/usb_mount mount
-ExecStop=/bin/usb_mount unmount
+ExecStart=/bin/usbmount mount
+ExecStop=/bin/usbmount unmount
+
+[Install]
+WantedBy=archiveloop.service

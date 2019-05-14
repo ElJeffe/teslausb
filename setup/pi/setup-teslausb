@@ -25,7 +25,7 @@ REPO=${REPO:-ElJeffe}
 BRANCH=${BRANCH:-main-dev}
 HEADLESS_SETUP=${HEADLESS_SETUP:-false}
 USE_LED_FOR_SETUP_PROGRESS=true
-CONFIGURE_ARCHIVING=${CONFIGURE_ARCHIVING:-false}
+CONFIGURE_ARCHIVING=${CONFIGURE_ARCHIVING:-true}
 UPGRADE_PACKAGES=${UPGRADE_PACKAGES:-false}
 TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
 export camsize=${camsize:-100%}
@@ -203,6 +203,10 @@ function update_package_index () {
     fi
 }
 
+function install_packages () {
+  apt-get install -y btrfs-tools vim dnsmasq hostapd
+}
+
 function upgrade_packages () {
   if [ "$UPGRADE_PACKAGES" = true ]
   then
@@ -279,7 +283,7 @@ function configure_init_scripts() {
 }
 
 function install_services() {
-  getscript /etc/systems/system usbmount.service run/install_services
+  get_script /etc/systemd/system usbmount.service run/services
   systemctl enable usbmount
   systemctl enable ssh
 }
@@ -288,6 +292,8 @@ export -f setup_progress
 export HEADLESS_SETUP
 
 update_package_index
+
+install_packages
 
 headless_setup_populate_variables
 
