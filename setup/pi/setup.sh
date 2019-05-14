@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# scp sahess05@192.168.18.180:tools/TeslaCam/scripts/setup.sh .
-
 function entry()
 {
   if ! [ $(id -u) = 0 ]
