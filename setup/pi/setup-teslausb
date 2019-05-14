@@ -30,7 +30,7 @@ UPGRADE_PACKAGES=${UPGRADE_PACKAGES:-false}
 TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
 export camsize=${camsize:-100%}
 export musicsize=${musicsize:-100%}
-export INSTALL_DIR=${INSTALL_DIR:-/root/bin}
+export INSTALL_DIR=${INSTALL_DIR:-/bin}
 
 function setup_progress () {
   local setup_logfile=/boot/teslausb-headless-setup.log
@@ -244,13 +244,13 @@ function install_rc_local () {
 
     if grep -q archiveloop /etc/rc.local
     then
-        log_progress "Skipping rc.local installation"
+        setup_progress "Skipping rc.local installation"
         return
     fi
 
-    log_progress "Configuring /etc/rc.local to run the archive scripts at startup..."
+    setup_progress "Configuring /etc/rc.local to run the archive scripts at startup..."
     echo "#!/bin/bash -eu" > ~/rc.local
-    echo "install_home=\"${install_home}\"" >> ~/rc.local
+    echo "install_home=\"${INSTALL_DIR}\"" >> ~/rc.local
     cat << 'EOF' >> ~/rc.local
 LOGFILE=/tmp/rc.local.log
 
@@ -260,21 +260,28 @@ function log () {
 }
 
 log "Launching archival script..."
-"$install_home"/archiveloop &
+"$INSTALL_DIR"/archiveloop &
 log "All done"
 exit 0
 EOF
 
     cat ~/rc.local > /etc/rc.local
     rm ~/rc.local
-    log_progress "Installed rc.local."
+    setup_progress "Installed rc.local."
 }
 
 function configure_init_scripts() {
   get_script $INSTALL_DIR archiveloop run
   get_script $INSTALL_DIR remountfs_rw run
+  get_script $INSTALL_DIR usbmount run
 
   install_rc_local INSTALL_DIR
+}
+
+function install_services() {
+  getscript /etc/systems/system usbmount.service run/install_services
+  systemctl enable usbmount
+  systemctl enable ssh
 }
 
 export -f setup_progress
@@ -319,6 +326,8 @@ configure_hostname
 headless_setup_progress_flash 4
 
 headless_setup_mark_setup_success
+
+install_services
 
 if [ "$CONFIGURE_ARCHIVING" = true ]
 then

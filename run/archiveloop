@@ -47,15 +47,6 @@ then
   exit 1
 fi
 
-function fix_errors_in_mount_point () {
-  local mount_point="$1"
-  log "Running fsck on $mount_point..."
-  local backingfile=$(mount | grep -w "$mount_point" | awk '{print $1}') 
-  local loopback=$(losetup -l | grep -w  "$backingfile" | awk '{print $1}')
-  /sbin/fsck "$loopback" -- -a >> "$LOG_FILE" 2>&1 || echo ""
-  log "Finished fsck on $mount_point."
-}
-
 function archive_is_reachable () {
   local reachable=true
 
@@ -67,12 +58,6 @@ function archive_is_reachable () {
     return
   fi
   true
-}
-
-function connect_usb_drives_to_host() {
-  log "Connecting usb to host..."
-  modprobe g_mass_storage
-  log "Connected usb to host."
 }
 
 function wait_for_archive_to_be_reachable () {
@@ -94,101 +79,6 @@ function wait_for_archive_to_be_reachable () {
   done
 }
 
-function retry () {
-  local attempts=0
-  while [ true ]
-  do
-    if eval "$@"
-    then
-      true
-      return
-    fi
-    if [ "$attempts" -ge 10 ]
-    then
-      log "Attempts exhausted."
-      false
-      return
-    fi
-    log "Sleeping before retry..."
-    /bin/sleep 1
-    attempts=$((attempts + 1))
-    log "Retrying..."
-  done
-  false
-  return
-}
-
-function mount_mountpoint () {
-  local mount_point="$1"
-  log "Mounting $mount_point..."
-
-  local mounted=true
-  mount "$mount_point" >> "$LOG_FILE" 2>&1 || mounted=false
-  if [ "$mounted" = true ]
-  then
-    log "Mounted $mount_point."
-    true
-    return
-  else
-    log "Failed to mount $mount_point."
-    false
-    return
-  fi
-}
-
-function ensure_mountpoint_is_mounted () {
-  local mount_point="$1"
-  local mount_exists=true
-
-  findmnt --mountpoint "$mount_point" > /dev/null || mount_exists=false
-
-  if [ "$mount_exists" = true ]
-  then
-    log "$mount_point is already mounted."
-  else
-    mount_mountpoint "$mount_point"
-  fi
-}
-
-function ensure_mountpoint_is_mounted_with_retry () {
-  retry ensure_mountpoint_is_mounted "$1"
-}
-
-function fix_errors_in_cam_file () {
-  fix_errors_in_mount_point "$CAM_MOUNT"
-}
-
-function ensure_cam_file_is_mounted () {
-  log "Ensuring cam file is mounted..."
-  ensure_mountpoint_is_mounted_with_retry "$CAM_MOUNT"
-  log "Ensured cam file is mounted."
-}
-
-function ensure_music_file_is_mounted () {
-  log "Ensuring music backing file is mounted..."
-  ensure_mountpoint_is_mounted_with_retry "$MUSIC_MOUNT"
-  log "Ensured music drive is mounted."
-}
-
-function unmount_mount_point () {
-  local mount_point="$1"
-  log "Unmounting $mount_point..."
-  umount "$mount_point" >> "$LOG_FILE" 2>&1
-  log "Unmounted $mount_point."
-}
-
-function unmount_cam_file () {
-  unmount_mount_point "$CAM_MOUNT"
-}
-
-function unmount_music_file () {
-  unmount_mount_point "$MUSIC_MOUNT"
-}
-
-function fix_errors_in_music_file () {
-  fix_errors_in_mount_point "$MUSIC_MOUNT"
-}
-
 function wait_for_archive_to_be_unreachable () {
   log "Waiting for archive to be unreachable..."
   while [ true ]
@@ -206,32 +96,6 @@ function wait_for_archive_to_be_unreachable () {
       fi
       sleep 1
   done
-}
-
-function mount_and_fix_errors_in_cam_file () {
-  ensure_cam_file_is_mounted
-  fix_errors_in_cam_file
-  unmount_cam_file
-}
-
-function mount_and_fix_errors_in_music_file () {
-  if [ -e "$MUSIC_MOUNT" ]
-  then
-    ensure_music_file_is_mounted
-    fix_errors_in_music_file
-    unmount_music_file
-  fi
-}
-
-function mount_and_fix_errors_in_files () {
-  mount_and_fix_errors_in_cam_file
-  mount_and_fix_errors_in_music_file
-}
-
-function disconnect_usb_drives_from_host () {
-  log "Disconnecting usb from host..."
-  modprobe -r g_mass_storage
-  log "Disconnected usb from host."
 }
 
 function archive_teslacam_clips () {
@@ -324,10 +188,6 @@ function doubleblink () {
   echo 1 > /sys/class/leds/led0/invert  
 }
 
-export -f mount_mountpoint
-export -f ensure_mountpoint_is_mounted
-export -f retry
-export -f ensure_mountpoint_is_mounted_with_retry
 export -f log
 
 log "Starting..."

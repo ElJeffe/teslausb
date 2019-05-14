@@ -1,0 +1,10 @@
+[Unit]
+Description=Connect the USB drives to the host
+Requires=
+After=
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/usb_mount mount
+ExecStop=/bin/usb_mount unmount
