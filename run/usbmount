@@ -148,7 +148,6 @@ function fix_errors_in_music_file () {
 function mount_and_fix_errors_in_cam_file () {
   ensure_cam_file_is_mounted
   fix_errors_in_cam_file
-  unmount_cam_file
 }
 
 function mount_and_fix_errors_in_music_file () {
@@ -156,8 +155,15 @@ function mount_and_fix_errors_in_music_file () {
   then
     ensure_music_file_is_mounted
     fix_errors_in_music_file
-    unmount_music_file
   fi
+}
+
+function unmount_files () {
+  unmount_cam_file
+  if [ -e "$MUSIC_MOUNT" ]
+  then
+    unmount_music_file
+  fi  
 }
 
 function mount_and_fix_errors_in_files () {
@@ -179,15 +185,13 @@ function connect_usb_drives_to_host() {
 
 if [ $1 == "mount" ]
 then
-  if ! [ -e "$ERRORS_CHECKED_FILE" ]
-  then
-    mount_and_fix_errors_in_files
-    touch $ERRORS_CHECKED_FILE
-  fi
+  mount_and_fix_errors_in_files
+  unmount_files
   connect_usb_drives_to_host
 elif [ $1 == "unmount" ]
 then
   disconnect_usb_drives_from_host
+  mount_and_fix_errors_in_files
 else
   log "Option is not recognized: $1"
 fi

@@ -1,0 +1,40 @@
+#!/bin/bash -eu
+
+# this script will mount or unmount the Cam and Music files
+# on the USB
+
+if [ "$BASH_SOURCE" != "$0" ]
+then
+  echo "$BASH_SOURCE must be executed, not sourced"
+  return 1 # shouldn't use exit when sourced
+fi
+
+if [ $# -lt 1 ]
+then
+  echo "No argument is provided"
+  exit 1
+fi
+
+export LOG_FILE=/tmp/wlan.log
+
+function log () {
+  echo -n "$( date ): " >> "$LOG_FILE"
+  echo "$1" >> "$LOG_FILE"
+}
+
+
+if [ $1 == "ap" ]
+then
+  set +e
+  wpa_cli -i wlan0 terminate
+  set -e
+  ip address add 192.168.4.1/24 dev wlan0
+  systemctl start hostapd
+elif [ $1 == "client" ]
+then
+  systemctl stop hostapd
+  ip address del 192.168.4.1/24 dev wlan0
+  wpa_supplicant -B -c/etc/wpa_supplicant/wpa_supplicant.conf -iwlan0 -Dnl80211,wext
+else
+  log "Option is not recognized: $1"
+fi

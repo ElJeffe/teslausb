@@ -28,6 +28,7 @@ USE_LED_FOR_SETUP_PROGRESS=true
 CONFIGURE_ARCHIVING=${CONFIGURE_ARCHIVING:-true}
 UPGRADE_PACKAGES=${UPGRADE_PACKAGES:-false}
 TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
+SETUP_ACCESS_POINT=${SETUP_ACCESS_POINT:-true}
 export camsize=${camsize:-100%}
 export musicsize=${musicsize:-100%}
 export INSTALL_DIR=${INSTALL_DIR:-/bin}
@@ -204,7 +205,7 @@ function update_package_index () {
 }
 
 function install_packages () {
-  apt-get install -y btrfs-tools vim dnsmasq hostapd
+  apt-get install -y btrfs-tools vim
 }
 
 function upgrade_packages () {
@@ -288,6 +289,62 @@ function install_services() {
   systemctl enable ssh
 }
 
+function setup_access_point() {
+  apt-get install -y dnsmasq hostapd
+
+    setup_progress "configure static IP" 
+  if ! grep -q "^interface wlan0" /etc/dhcpcd.conf
+  then
+    setup_progress "Update /etc/dhcpcd.conf"
+    cat <<EOT >> /etc/dhcpcd.conf
+interface wlan0
+    nohook wpa_supplicant
+EOT
+  fi
+
+  setup_progress "Configure DHCP server"
+  if ! grep -q "^interface=wlan0" /etc/dnsmasq.conf
+  then
+    setup_progress "Update /etc/dnsmasq.conf"
+    mv /etc/dnsmasq.conf /etc/dnsmasq.conf.orig
+    cat <<EOT >> /etc/dnsmasq.conf
+interface=wlan0
+dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
+EOT
+  fi
+
+  setup_progress "Configure hostapd"
+  if ! grep -q "^interface=wlan0" /etc/hostapd/hostapd.conf
+  then
+    setup_progress "Update /etc/hostapd/hostapd.conf"
+    cat <<EOT >> /etc/hostapd/hostapd.conf
+interface=wlan0
+driver=nl80211
+ssid=Cam
+hw_mode=g
+channel=7
+wmm_enabled=0
+macaddr_acl=0
+auth_algs=1
+ignore_broadcast_ssid=0
+wpa=2
+wpa_passphrase=ElonMusk
+wpa_key_mgmt=WPA-PSK
+wpa_pairwise=TKIP
+rsn_pairwise=CCMP
+ctrl_interface=/var/run/hostapd
+ctrl_interface_group=0
+EOT
+  fi
+  echo "Update /etc/default/hostapd"
+  sed -i 's/^#DAEMON_CONF.*$/DAEMON_CONF="\/etc\/hostapd\/hostapd.conf"/g' /etc/default/hostapd
+
+  systemctl disable wpa_supplicant
+  systemctl unmask hostapd
+  systemctl disable hostapd
+  systemctl enable dnsmasq
+}
+
 export -f setup_progress
 export HEADLESS_SETUP
 
@@ -334,6 +391,11 @@ headless_setup_progress_flash 4
 headless_setup_mark_setup_success
 
 install_services
+
+if [ "$SETUP_ACCESS_POINT" = true ]
+then
+  setup_access_point
+fi
 
 if [ "$CONFIGURE_ARCHIVING" = true ]
 then
