@@ -159,6 +159,40 @@ function archive_clips () {
   connect_usb_drives_to_host
 }
 
+function hostapd_station_connected () {
+  if [ "$(hostapd_cli -iwlan0 all_sta)" ]
+  then
+    true
+    return
+  fi
+  false
+}
+
+function wait_for_hostapd_stations () {
+  log "Waiting for hostapd stations..."
+  while [ true ]
+    do
+      if hostapd_station_connected
+      then
+        log "Hostapd station detected."
+        break
+      fi
+      sleep 1
+  done
+}
+function wait_for_hostapd_stations_gone () {
+  log "Waiting for hostapd stations..."
+  while [ true ]
+    do
+      if ! hostapd_station_connected
+      then
+        log "No more hostapd station connected."
+        break
+      fi
+      sleep 1
+  done
+}
+
 function truncate_log () {
   local log_length=$( wc -l "$LOG_FILE" | cut -d' ' -f 1 )
   if [ "$log_length" -gt 10000 ]
@@ -192,6 +226,18 @@ export -f log
 
 log "Starting..."
 
+config_wlan ap
+
+while [ true ]
+do
+  wait_for_hostapd_stations
+
+  systemctl stop usbmount
+
+  wait_for_hostapd_stations_gone
+
+  systemctl start usbmount
+done
 
 # if archive_is_reachable
 # then
@@ -206,11 +252,11 @@ log "Starting..."
 
 #   wait_for_archive_to_be_unreachable
 # else
-  slowblink
+#  slowblink
 
-  mount_and_fix_errors_in_files
+#  mount_and_fix_errors_in_files
 
-  connect_usb_drives_to_host
+# connect_usb_drives_to_host
 # fi
 
 # while [ true ]
