@@ -26,7 +26,7 @@ BRANCH=${BRANCH:-main-dev}
 HEADLESS_SETUP=${HEADLESS_SETUP:-false}
 USE_LED_FOR_SETUP_PROGRESS=true
 CONFIGURE_ARCHIVING=${CONFIGURE_ARCHIVING:-true}
-UPGRADE_PACKAGES=${UPGRADE_PACKAGES:-false}
+UPGRADE_PACKAGES=${UPGRADE_PACKAGES:-true}
 TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
 SETUP_ACCESS_POINT=${SETUP_ACCESS_POINT:-true}
 export camsize=${camsize:-100%}
@@ -206,6 +206,8 @@ function update_package_index () {
 
 function install_packages () {
   apt-get install -y btrfs-tools vim
+  apt-get purge -y bluez
+  apt-get autoremove -y --purge
 }
 
 function upgrade_packages () {
@@ -290,7 +292,7 @@ function install_services() {
 }
 
 function setup_access_point() {
-  apt-get install -y dnsmasq hostapd
+  apt-get install -y dnsmasq hostapd lighttpd php7.0-fpm
 
     setup_progress "configure static IP" 
   if ! grep -q "^interface wlan0" /etc/dhcpcd.conf
@@ -310,6 +312,11 @@ EOT
     cat <<EOT >> /etc/dnsmasq.conf
 interface=wlan0
 dhcp-range=192.168.4.2,192.168.4.20,255.255.255.0,24h
+listen-address=192.168.4.1
+addn-hosts=/etc/fake.hosts
+EOT
+    cat <<EOT > /etc/fake.hosts
+192.168.4.1     teslacam.com
 EOT
   fi
 
@@ -339,6 +346,11 @@ EOT
   echo "Update /etc/default/hostapd"
   sed -i 's/^#DAEMON_CONF.*$/DAEMON_CONF="\/etc\/hostapd\/hostapd.conf"/g' /etc/default/hostapd
 
+  echo "configure web server"
+  get_script /etc/lighttpd lighttpd.conf run/etc
+  wget https://release.larsjung.de/h5ai/h5ai-0.29.2.zip -O /tmp/h5ai.zip
+  unzip /tmp/h5ai.zip -d /var/www/html/
+  ln -s /mnt/cam/TeslaCam /var/www/html/TeslaCam
   systemctl disable wpa_supplicant
   systemctl unmask hostapd
   systemctl disable hostapd

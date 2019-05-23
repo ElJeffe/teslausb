@@ -60,6 +60,14 @@ else
    echo "$CONFIG_TXT_PATH already contains the required dwc2 module"
 fi
 
+if ! grep -q "dtoverlay=pi3-disable-bt" $CONFIG_TXT_PATH
+then
+   echo "Updating $CONFIG_TXT_PATH ..."
+   echo "" >> "$CONFIG_TXT_PATH"
+   echo "dtoverlay=pi3-disable-bt" >> "$CONFIG_TXT_PATH"
+else
+   echo "$CONFIG_TXT_PATH already contains the required dwc2 module"
+fi
 if ! grep -q "dwc2,g_ether" $CMDLINE_TXT_PATH
 then
   echo "Updating $CMDLINE_TXT_PATH ..."
