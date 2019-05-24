@@ -34,7 +34,7 @@ function check_archive_mountable () {
   local cifs_version="${cifs_version:-3.0}"
 
   local tmp_credentials_file_path="/tmp/teslaCamArchiveCredentials"
-  /root/bin/write-archive-configs-to.sh "$tmp_credentials_file_path"
+  ${INSTALL_DIR}/write-archive-configs-to.sh "$tmp_credentials_file_path"
 
   local mount_failed=false
   log_progress "Mount command-line: "

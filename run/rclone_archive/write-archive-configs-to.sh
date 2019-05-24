@@ -2,5 +2,6 @@
 
 FILE_PATH="$1"
 
+echo "INSTALL_DIR=\"$INSTALL_DIR\"" > "$FILE_PATH"
 echo "drive=$RCLONE_DRIVE" > "$FILE_PATH"
 echo "path=$RCLONE_PATH" >> "$FILE_PATH"

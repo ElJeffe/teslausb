@@ -41,6 +41,7 @@ fi
 
 source /root/teslausb.conf
 
+export INSTALL_DIR=${INSTALL_DIR}
 if [ -z "${ARCHIVE_HOST_NAME+x}" ]
 then
   log "ARCHIVE_HOST_NAME not set"
@@ -50,7 +51,7 @@ fi
 function archive_is_reachable () {
   local reachable=true
 
-  /root/bin/archive-is-reachable.sh "$ARCHIVE_HOST_NAME" || reachable=false
+  ${install_dir}/archive-is-reachable.sh "$ARCHIVE_HOST_NAME" || reachable=false
 
   if [ "$reachable" = false ]
   then
@@ -105,7 +106,7 @@ function archive_teslacam_clips () {
 
   fix_errors_in_cam_file
 
-  /root/bin/archive-clips.sh
+  ${INSTALL_DIR}/archive-clips.sh
 
   unmount_cam_file
 }
@@ -117,7 +118,7 @@ function copy_music_files () {
 
   fix_errors_in_music_file
 
-  /root/bin/copy-music.sh
+  ${INSTALL_DIR}/copy-music.sh
 
   unmount_music_file
 }
@@ -127,7 +128,7 @@ function archive_clips () {
 
   disconnect_usb_drives_from_host
 
-  if ! /root/bin/connect-archive.sh
+  if ! ${INSTALL_DIR}/connect-archive.sh
   then
     log "Couldn't connect archive, skipping archive step"
     connect_usb_drives_to_host
@@ -154,7 +155,7 @@ function archive_clips () {
     log "No music archive configured"
   fi
 
-  /root/bin/disconnect-archive.sh
+  ${INSTALL_DIR}/disconnect-archive.sh
 
   connect_usb_drives_to_host
 }

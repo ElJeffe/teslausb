@@ -31,7 +31,7 @@ TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
 SETUP_ACCESS_POINT=${SETUP_ACCESS_POINT:-true}
 export camsize=${camsize:-100%}
 export musicsize=${musicsize:-100%}
-export INSTALL_DIR=${INSTALL_DIR:-/root/bin}
+INSTALL_DIR=${INSTALL_DIR:-/bin}
 
 function setup_progress () {
   local setup_logfile=/boot/teslausb-headless-setup.log
@@ -228,11 +228,11 @@ function set_timezone () {
       ln -sf "/usr/share/zoneinfo/$timezone" /etc/localtime
     elif [ "$timezone" = "auto" ]
     then
-      if curl -o /root/bin/tzupdate.py https://raw.githubusercontent.com/marcone/tzupdate/develop/tzupdate.py
+      if curl -o ${INSTALL_DIR}/tzupdate.py https://raw.githubusercontent.com/marcone/tzupdate/develop/tzupdate.py
       then
         apt-get -y --force-yes install python-requests
-        chmod +x /root/bin/tzupdate.py
-        if ! tzout=$(/root/bin/tzupdate.py 2>&1)
+        chmod +x ${INSTALL_DIR}/tzupdate.py
+        if ! tzout=$(${INSTALL_DIR}/tzupdate.py 2>&1)
         then
           setup_progress "auto timezone failed: $tzout"
         else
@@ -287,6 +287,7 @@ function configure_init_scripts() {
 
 function install_services() {
   get_script /etc/systemd/system usbmount.service run/services
+  sed -i 's/INSTALL_DIR/${INSTALL_DIR}/g' /etc/systemd/system/usbmount.service
   systemctl enable usbmount
   systemctl enable ssh
 }
@@ -352,9 +353,9 @@ EOT
   ln -sf ../conf-available/15-fastcgi-php.conf /etc/lighttpd/conf-enabled
   get_script /etc/lighttpd/conf-available 15-fastcgi-php.conf run/etc
   wget https://release.larsjung.de/h5ai/h5ai-0.29.2.zip -O /tmp/h5ai.zip
-  unzip /tmp/h5ai.zip -d /var/www/html/
-  ln -s /mnt/cam/TeslaCam /var/www/html/TeslaCam
-  rm /var/www/html/index.lighttpd.html
+  unzip -o /tmp/h5ai.zip -d /var/www/html/
+  ln -sf /mnt/cam/TeslaCam /var/www/html/TeslaCam
+  rm -f /var/www/html/index.lighttpd.html
   systemctl disable wpa_supplicant
   systemctl unmask hostapd
   systemctl disable hostapd

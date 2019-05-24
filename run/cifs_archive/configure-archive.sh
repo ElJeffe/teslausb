@@ -21,7 +21,7 @@ function configure_archive () {
   local cifs_version="${cifs_version:-3.0}"
 
   local credentials_file_path="/root/.teslaCamArchiveCredentials"
-  /root/bin/write-archive-configs-to.sh "$credentials_file_path"
+  ${INSTALL_DIR}/write-archive-configs-to.sh "$credentials_file_path"
 
   if ! grep -w -q "$archive_path" /etc/fstab
   then

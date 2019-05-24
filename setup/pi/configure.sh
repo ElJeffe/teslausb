@@ -267,6 +267,7 @@ check_archive_configs
 
 echo "ARCHIVE_HOST_NAME=$archiveserver" > /root/teslausb.conf
 echo "ARCHIVE_DELAY=${archivedelay:-20}" >> /root/teslausb.conf
+echo "INSTALL_DIR=\"$INSTALL_DIR\"" >> /root/teslausb.conf
 
 archive_module="$( get_archive_module )"
 log_progress "Using archive module: $archive_module"

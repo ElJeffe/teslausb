@@ -1,10 +1,11 @@
 #!/bin/bash -eu
+export INSTALL_DIR=${INSTALL_DIR:-/root/bin}
 
 function configure_archive () {
   echo "Configuring rclone archive..."
   
   local config_file_path="/root/.teslaCamRcloneConfig"
-  /root/bin/write-archive-configs-to.sh "$config_file_path"
+  ${INSTALL_DIR}/write-archive-configs-to.sh "$config_file_path"
 
   if [ ! -L "/root/.config/rclone" ] && [ -e "/root/.config/rclone" ]
   then
