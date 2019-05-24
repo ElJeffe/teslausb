@@ -348,9 +348,12 @@ EOT
 
   echo "configure web server"
   get_script /etc/lighttpd lighttpd.conf run/etc
+  lighty-enable-mod fastcgi-php
+  get_script /etc/lifgttpd/conf-available/15-fastcgi-php.conf run/etc
   wget https://release.larsjung.de/h5ai/h5ai-0.29.2.zip -O /tmp/h5ai.zip
   unzip /tmp/h5ai.zip -d /var/www/html/
   ln -s /mnt/cam/TeslaCam /var/www/html/TeslaCam
+  rm /var/www/html/index.lighttpd.html
   systemctl disable wpa_supplicant
   systemctl unmask hostapd
   systemctl disable hostapd
