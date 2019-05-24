@@ -227,7 +227,7 @@ export -f log
 
 log "Starting..."
 
-config_wlan ap
+${INSTALL_DIR}/config_wlan ap
 
 while [ true ]
 do
