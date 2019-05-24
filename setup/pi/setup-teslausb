@@ -257,7 +257,7 @@ function install_rc_local () {
 
     setup_progress "Configuring /etc/rc.local to run the archive scripts at startup..."
     echo "#!/bin/bash -eu" > ~/rc.local
-    echo "install_home=\"${INSTALL_DIR}\"" >> ~/rc.local
+    echo "install_home=\"${install_home}\"" >> ~/rc.local
     cat << 'EOF' >> ~/rc.local
 LOGFILE=/tmp/rc.local.log
 
@@ -267,7 +267,7 @@ function log () {
 }
 
 log "Launching archival script..."
-"$INSTALL_DIR"/archiveloop &
+"$install_home"/archiveloop &
 log "All done"
 exit 0
 EOF
@@ -348,8 +348,9 @@ EOT
 
   echo "configure web server"
   get_script /etc/lighttpd lighttpd.conf run/etc
-  lighty-enable-mod fastcgi-php
-  get_script /etc/lifgttpd/conf-available/15-fastcgi-php.conf run/etc
+  ln -s ../conf-available/10-fastcgi.conf /etc/lighttpd/conf-enabled
+  ln -s ../conf-available/15-fastcgi-php.conf /etc/lighttpd/conf-enabled
+  get_script /etc/lighttpd/conf-available 15-fastcgi-php.conf run/etc
   wget https://release.larsjung.de/h5ai/h5ai-0.29.2.zip -O /tmp/h5ai.zip
   unzip /tmp/h5ai.zip -d /var/www/html/
   ln -s /mnt/cam/TeslaCam /var/www/html/TeslaCam
