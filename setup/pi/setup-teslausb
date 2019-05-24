@@ -31,7 +31,7 @@ TESLAUSB_HOSTNAME=${TESLAUSB_HOSTNAME:-teslausb}
 SETUP_ACCESS_POINT=${SETUP_ACCESS_POINT:-true}
 export camsize=${camsize:-100%}
 export musicsize=${musicsize:-100%}
-export INSTALL_DIR=${INSTALL_DIR:-/bin}
+export INSTALL_DIR=${INSTALL_DIR:-/root/bin}
 
 function setup_progress () {
   local setup_logfile=/boot/teslausb-headless-setup.log
@@ -348,8 +348,8 @@ EOT
 
   echo "configure web server"
   get_script /etc/lighttpd lighttpd.conf run/etc
-  ln -s ../conf-available/10-fastcgi.conf /etc/lighttpd/conf-enabled
-  ln -s ../conf-available/15-fastcgi-php.conf /etc/lighttpd/conf-enabled
+  ln -sf ../conf-available/10-fastcgi.conf /etc/lighttpd/conf-enabled
+  ln -sf ../conf-available/15-fastcgi-php.conf /etc/lighttpd/conf-enabled
   get_script /etc/lighttpd/conf-available 15-fastcgi-php.conf run/etc
   wget https://release.larsjung.de/h5ai/h5ai-0.29.2.zip -O /tmp/h5ai.zip
   unzip /tmp/h5ai.zip -d /var/www/html/
@@ -363,6 +363,8 @@ EOT
 
 export -f setup_progress
 export HEADLESS_SETUP
+
+mkdir -p $INSTALL_DIR
 
 update_package_index
 
